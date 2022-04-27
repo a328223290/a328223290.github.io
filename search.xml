@@ -1,3 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
+  <entry>
+    <title>批量梯度下降-BGD-、随机梯度下降-SGD-以及小批量梯度下降-MBGD-的理解</title>
+    <url>/2022/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/</url>
+    <content><![CDATA[<p>​    梯度下降作为机器学习中较为常用的优化算法，有三种不同的形式：<strong>批量梯度下降（Batch Gradient Descent）、随机梯度下降（Stochastic Gradient Descent）以及小批量梯度下降（Mini-Batch Gradient Descent）</strong>。其中小批量梯度下降法也常用在深度学习中进行模型的训练。接下来，我们对这三种不同的梯度下降法进行理解：</p>
+<p>​    为了便于理解，我们采用只含有一个特征的线性回归来展开阐述。此时线性回归的假设函数为：</p>
+<script type="math/tex; mode=display">
+h_\theta(x^{(i)})=\theta_1x^{(i)}+\theta_0</script><p>其中<script type="math/tex">i=1，2，.。。，m</script>表示样本数。</p>
+<p>​        对应的代价函数为:</p>
+<script type="math/tex; mode=display">
+J(\theta_0,\theta_1)=\frac{1}{2m}\sum_{i=1}^{m}(h_\theta(x^{(i)})-y^{(i)})^2</script><p>​    下图为代价函数<script type="math/tex">J(\theta_0,\theta_1)</script>与参数<script type="math/tex">\theta_0,\theta_1</script>的函数图像：</p>
+<img src="/2022/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/Cost.png" class title="代价函数图像">
+<h2 id="1-批量梯度下降（Batch-Gradient-Descent-BGD）"><a href="#1-批量梯度下降（Batch-Gradient-Descent-BGD）" class="headerlink" title="1. 批量梯度下降（Batch Gradient Descent, BGD）"></a>1. 批量梯度下降（Batch Gradient Descent, BGD）</h2><p>​    批量梯度下降法是最原始的梯度下降形式，它指在<strong>每一次迭代时使用所有样本来进行梯度的更新</strong>。从数学上可以如下理解：</p>
+<p>（1）对目标函数求偏导：</p>
+<script type="math/tex; mode=display">
+\frac{\Delta J(\theta_0,\theta_1)}{\Delta \theta_j}=\frac{1}{m}\sum_{i=1}^{m}(h_\theta(x^{(i)}-y^{(i)})x_j^{(i)}</script><p>其中<script type="math/tex">i=1，2，.。。，m</script>表示样本数，<script type="math/tex">j=0,1</script>表示特征数，这里我们使用了偏置项<script type="math/tex">x_0^{i} = 1</script>。</p>
+<p>（2）每次迭代对参数进行更新：</p>
+<script type="math/tex; mode=display">
+\theta_j=\theta_j-\alpha\frac{1}{m}\sum_{i=1}^{m}(h_\theta(x^{(i)}-y^{(i)})x_j^{(i)}</script><p>其中<script type="math/tex">\alpha</script>为学习步长。</p>
+<p><strong>优点：</strong></p>
+<ol>
+<li>一次迭代是对所有样本进行计算，此时利用矩阵进行操作可实现并行。</li>
+<li>由全部数据集确定的方向能够更好地代表样品总数，从而更准确地朝向极值所在的方向。当目标函数为凸函数时，BGD能找到全局最优（但是可能会碰到梯度零点，此时BGD会失效，SGD可以解决这个问题。）</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li>当样本总数<script type="math/tex">m</script>很大时，由于每次迭代需要对所有样本进行计算，训练过程会很慢。</li>
+</ol>
+<p>从迭代的次数上，BGD迭代次数相对少。其迭代的收敛曲线示意图可以表示如下：</p>
+<p><img src="/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/image-20220427154523839.png" alt="BGD梯度下降示意图"></p>
+<img src="/2022/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/BGD.png" class title="BGD梯度下降示意图">
+<h2 id="2-随机梯度下降（Stochastic-Gradient-Descent，SGD）"><a href="#2-随机梯度下降（Stochastic-Gradient-Descent，SGD）" class="headerlink" title="2. 随机梯度下降（Stochastic Gradient Descent，SGD）"></a>2. 随机梯度下降（Stochastic Gradient Descent，SGD）</h2><p>​    随机梯度下降法不同于批量梯度下降，随机梯度下降是每次迭代使用一个样本来对参数进行更新，使得训练速度加快。</p>
+<p>​    对于一个样本的代价函数为：</p>
+<script type="math/tex; mode=display">
+J^{(i)}(\theta_0,\theta_1)=\frac{1}{2}(h_\theta(x^{(i)})-y^{(i)})^2</script><p>（1）对目标函数求偏导：</p>
+<script type="math/tex; mode=display">
+\frac{\Delta J^{(i)}(\theta_0,\theta_1)}{\theta_j}=(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}</script><p>（2）参数更新过程：</p>
+<script type="math/tex; mode=display">
+\theta_j=\theta_j-\alpha(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}</script><p><strong>优点：</strong></p>
+<ol>
+<li>由于不是在全部训练数据上的损失函数，而是在每次迭代中，随即优化某一条训练数据上的损失函数，这样每一轮参数的更新速度大大加快。</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li>准确度下降，即使在代价函数为强凸函数的情况下，仍然无法做到线性收敛。</li>
+<li>可能会收敛到局部最优，因为单个样本无法代表全体样本的趋势。</li>
+<li>不易于并行实现。</li>
+</ol>
+<p><strong>为什么SGD收敛速度比BGD要快？</strong></p>
+<p>Ans：假设我们有30W个样本，因为样本数很大，我们再假设BGD要10个epoch才能求得最小值<strong><em>(epoch指所有的数据送入网络中， 完成了一次前向计算 +反向传播的过程，即所有数据被用于更新权重的一次过程。)</em></strong>；而对于SGD，每次更新参数只需要一个样本，因此若使用这30W个样本进行参数更新，那么BGD要计算10 x 30W次，而SGD需要1X30W次，并且SGD可能在这之前就能收敛到一个合适的最小值上了。显然SGD的收敛速度远远快于BGD。</p>
+<p>下图为SGD的收敛示意图：</p>
+<img src="/2022/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/SGD.png" class title="SGD梯度下降示例">
+<h2 id="3-小批量梯度下降（Mini-Batch-Gradient-Descent，MBGD）"><a href="#3-小批量梯度下降（Mini-Batch-Gradient-Descent，MBGD）" class="headerlink" title="3. 小批量梯度下降（Mini-Batch Gradient Descent，MBGD）"></a>3. 小批量梯度下降（Mini-Batch Gradient Descent，MBGD）</h2><p>​    小批量梯度下降法是对批量梯度下降和随机梯度下降的折中。其思想是：每次迭代使用batch_size个样本来对参数进行更新。</p>
+<p><strong>优点：</strong></p>
+<ol>
+<li>通过矩阵运算，且每次在一个batch上优化神经网络参数不会比单个数据慢太多</li>
+<li>每次使用一个batch可以大大减小收敛所需要的迭代次数，同时可以使收敛到的结果更加接近梯度下降的效果。</li>
+<li>可以实现并行。</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li>batch_size的不当选择可能会带来一些问题。</li>
+</ol>
+<p><strong>batch_size的选择带来的影响：</strong></p>
+<ol>
+<li>在合理地范围内，增大batch_size的好处：<br>    a. 内存利用率提高了，大矩阵乘法的并行化效率提高。<br>    b. 跑完一次 epoch（全数据集）所需的迭代次数减少，对于相同数据量的处理速度进一步加快。<br>    c. 在一定范围内，一般来说 Batch_Size 越大，其确定的下降方向越准，引起训练震荡越小。</li>
+<li>盲目增大batch_size的坏处：<br>    a. 内存利用率提高了，但是内存容量可能撑不住了。<br>    b. 跑完一次 epoch（全数据集）所需的迭代次数减少，要想达到相同的精度，其所花费的时间大大增加了，从而对参数的修 正也就显得更加缓慢。<br>    c. Batch_Size 增大到一定程度，其确定的下降方向已经基本不再变化。</li>
+</ol>
+]]></content>
+      <tags>
+        <tag>Machine learning</tag>
+      </tags>
+  </entry>
 </search>

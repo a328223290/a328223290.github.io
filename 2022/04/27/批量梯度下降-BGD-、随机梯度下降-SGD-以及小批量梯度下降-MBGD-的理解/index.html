@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="keywords" content="Hexo Theme Keep">
+    <meta name="description" content="Hexo Theme Keep">
+    <meta name="author" content="Xinkai Ge">
+    
+    <title>
+        
+            批量梯度下降-BGD-、随机梯度下降-SGD-以及小批量梯度下降-MBGD-的理解 |
+        
+        Kai&#39;s Knowledge &amp; Life Base
+    </title>
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <link rel="shortcut icon" href="/images/logo.svg">
+    
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+
+    <script id="hexo-configurations">
+    let KEEP = window.KEEP || {};
+    KEEP.hexo_config = {"hostname":"a328223290.github.io","root":"/","language":"en","path":"search.xml"};
+    KEEP.theme_config = {"toc":{"enable":true,"number":true,"expand_all":false,"init_open":false},"style":{"primary_color":"#0066CC","avatar":"/images/avatar.svg","favicon":"/images/logo.svg","article_img_align":"left","left_side_width":"260px","content_max_width":"920px","hover":{"shadow":false,"scale":false},"first_screen":{"enable":true,"background_img":"/images/bg.svg","description":"Keep calm and carry on."},"scroll":{"progress_bar":{"enable":true},"percent":{"enable":true}}},"local_search":{"enable":true,"preload":true},"code_copy":{"enable":true,"style":"default"},"pjax":{"enable":false},"lazyload":{"enable":false},"version":"3.4.5"};
+    KEEP.language_ago = {"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"};
+  </script>
+<meta name="generator" content="Hexo 6.1.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+        <span class="scroll-progress-bar"></span>
+    
+
+    
+</div>
+
+
+<main class="page-container">
+
+    
+
+    <div class="page-main-content">
+
+        <div class="page-main-content-top">
+            <header class="header-wrapper">
+
+    <div class="header-content">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                Kai&#39;s Knowledge &amp; Life Base
+            </a>
+        </div>
+
+        <div class="right">
+            <div class="pc">
+                <ul class="menu-list">
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/"
+                            >
+                                HOME
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/archives"
+                            >
+                                ARCHIVES
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/categories"
+                            >
+                                CATEGORIES
+                            </a>
+                        </li>
+                    
+                    
+                        <li class="menu-item search search-popup-trigger">
+                            <i class="fas fa-search"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fas fa-search"></i></div>
+                
+                <div class="icon-item menu-bar">
+                    <div class="menu-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-drawer">
+        <ul class="drawer-menu-list">
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/">HOME</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/archives">ARCHIVES</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/categories">CATEGORIES</a>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="page-main-content-middle">
+
+            <div class="main-content">
+
+                
+                    <div class="fade-in-down-animation">
+    <div class="article-content-container">
+
+        <div class="article-title">
+            <span class="title-hover-animation">批量梯度下降-BGD-、随机梯度下降-SGD-以及小批量梯度下降-MBGD-的理解</span>
+        </div>
+
+        
+            <div class="article-header">
+                <div class="avatar">
+                    <img src="/images/avatar.svg">
+                </div>
+                <div class="info">
+                    <div class="author">
+                        <span class="name">Xinkai Ge</span>
+                        
+                            <span class="author-label">Lv1</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fas fa-edit"></i>&nbsp;
+        <span class="pc">2022-04-27 16:54:33</span>
+        <span class="mobile">2022-04-27 16:54</span>
+    </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fas fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/Machine-learning/">Machine learning</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+        <span class="article-wordcount article-meta-item">
+            <i class="fas fa-file-word"></i>&nbsp;<span>1.4k Words</span>
+        </span>
+    
+    
+        <span class="article-min2read article-meta-item">
+            <i class="fas fa-clock"></i>&nbsp;<span>5 Mins</span>
+        </span>
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        <div class="article-content markdown-body">
+            <p>​    梯度下降作为机器学习中较为常用的优化算法，有三种不同的形式：<strong>批量梯度下降（Batch Gradient Descent）、随机梯度下降（Stochastic Gradient Descent）以及小批量梯度下降（Mini-Batch Gradient Descent）</strong>。其中小批量梯度下降法也常用在深度学习中进行模型的训练。接下来，我们对这三种不同的梯度下降法进行理解：</p>
+<p>​    为了便于理解，我们采用只含有一个特征的线性回归来展开阐述。此时线性回归的假设函数为：</p>
+<script type="math/tex; mode=display">
+h_\theta(x^{(i)})=\theta_1x^{(i)}+\theta_0</script><p>其中<script type="math/tex">i=1，2，.。。，m</script>表示样本数。</p>
+<p>​        对应的代价函数为:</p>
+<script type="math/tex; mode=display">
+J(\theta_0,\theta_1)=\frac{1}{2m}\sum_{i=1}^{m}(h_\theta(x^{(i)})-y^{(i)})^2</script><p>​    下图为代价函数<script type="math/tex">J(\theta_0,\theta_1)</script>与参数<script type="math/tex">\theta_0,\theta_1</script>的函数图像：</p>
+<img src="/2022/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/Cost.png" class title="代价函数图像">
+<h2 id="1-批量梯度下降（Batch-Gradient-Descent-BGD）"><a href="#1-批量梯度下降（Batch-Gradient-Descent-BGD）" class="headerlink" title="1. 批量梯度下降（Batch Gradient Descent, BGD）"></a>1. 批量梯度下降（Batch Gradient Descent, BGD）</h2><p>​    批量梯度下降法是最原始的梯度下降形式，它指在<strong>每一次迭代时使用所有样本来进行梯度的更新</strong>。从数学上可以如下理解：</p>
+<p>（1）对目标函数求偏导：</p>
+<script type="math/tex; mode=display">
+\frac{\Delta J(\theta_0,\theta_1)}{\Delta \theta_j}=\frac{1}{m}\sum_{i=1}^{m}(h_\theta(x^{(i)}-y^{(i)})x_j^{(i)}</script><p>其中<script type="math/tex">i=1，2，.。。，m</script>表示样本数，<script type="math/tex">j=0,1</script>表示特征数，这里我们使用了偏置项<script type="math/tex">x_0^{i} = 1</script>。</p>
+<p>（2）每次迭代对参数进行更新：</p>
+<script type="math/tex; mode=display">
+\theta_j=\theta_j-\alpha\frac{1}{m}\sum_{i=1}^{m}(h_\theta(x^{(i)}-y^{(i)})x_j^{(i)}</script><p>其中<script type="math/tex">\alpha</script>为学习步长。</p>
+<p><strong>优点：</strong></p>
+<ol>
+<li>一次迭代是对所有样本进行计算，此时利用矩阵进行操作可实现并行。</li>
+<li>由全部数据集确定的方向能够更好地代表样品总数，从而更准确地朝向极值所在的方向。当目标函数为凸函数时，BGD能找到全局最优（但是可能会碰到梯度零点，此时BGD会失效，SGD可以解决这个问题。）</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li>当样本总数<script type="math/tex">m</script>很大时，由于每次迭代需要对所有样本进行计算，训练过程会很慢。</li>
+</ol>
+<p>从迭代的次数上，BGD迭代次数相对少。其迭代的收敛曲线示意图可以表示如下：</p>
+<p><img src="/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/image-20220427154523839.png" alt="BGD梯度下降示意图"></p>
+<img src="/2022/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/BGD.png" class title="BGD梯度下降示意图">
+<h2 id="2-随机梯度下降（Stochastic-Gradient-Descent，SGD）"><a href="#2-随机梯度下降（Stochastic-Gradient-Descent，SGD）" class="headerlink" title="2. 随机梯度下降（Stochastic Gradient Descent，SGD）"></a>2. 随机梯度下降（Stochastic Gradient Descent，SGD）</h2><p>​    随机梯度下降法不同于批量梯度下降，随机梯度下降是每次迭代使用一个样本来对参数进行更新，使得训练速度加快。</p>
+<p>​    对于一个样本的代价函数为：</p>
+<script type="math/tex; mode=display">
+J^{(i)}(\theta_0,\theta_1)=\frac{1}{2}(h_\theta(x^{(i)})-y^{(i)})^2</script><p>（1）对目标函数求偏导：</p>
+<script type="math/tex; mode=display">
+\frac{\Delta J^{(i)}(\theta_0,\theta_1)}{\theta_j}=(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}</script><p>（2）参数更新过程：</p>
+<script type="math/tex; mode=display">
+\theta_j=\theta_j-\alpha(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}</script><p><strong>优点：</strong></p>
+<ol>
+<li>由于不是在全部训练数据上的损失函数，而是在每次迭代中，随即优化某一条训练数据上的损失函数，这样每一轮参数的更新速度大大加快。</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li>准确度下降，即使在代价函数为强凸函数的情况下，仍然无法做到线性收敛。</li>
+<li>可能会收敛到局部最优，因为单个样本无法代表全体样本的趋势。</li>
+<li>不易于并行实现。</li>
+</ol>
+<p><strong>为什么SGD收敛速度比BGD要快？</strong></p>
+<p>Ans：假设我们有30W个样本，因为样本数很大，我们再假设BGD要10个epoch才能求得最小值<strong><em>(epoch指所有的数据送入网络中， 完成了一次前向计算 +反向传播的过程，即所有数据被用于更新权重的一次过程。)</em></strong>；而对于SGD，每次更新参数只需要一个样本，因此若使用这30W个样本进行参数更新，那么BGD要计算10 x 30W次，而SGD需要1X30W次，并且SGD可能在这之前就能收敛到一个合适的最小值上了。显然SGD的收敛速度远远快于BGD。</p>
+<p>下图为SGD的收敛示意图：</p>
+<img src="/2022/04/27/%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-BGD-%E3%80%81%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-SGD-%E4%BB%A5%E5%8F%8A%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D-MBGD-%E7%9A%84%E7%90%86%E8%A7%A3/SGD.png" class title="SGD梯度下降示例">
+<h2 id="3-小批量梯度下降（Mini-Batch-Gradient-Descent，MBGD）"><a href="#3-小批量梯度下降（Mini-Batch-Gradient-Descent，MBGD）" class="headerlink" title="3. 小批量梯度下降（Mini-Batch Gradient Descent，MBGD）"></a>3. 小批量梯度下降（Mini-Batch Gradient Descent，MBGD）</h2><p>​    小批量梯度下降法是对批量梯度下降和随机梯度下降的折中。其思想是：每次迭代使用batch_size个样本来对参数进行更新。</p>
+<p><strong>优点：</strong></p>
+<ol>
+<li>通过矩阵运算，且每次在一个batch上优化神经网络参数不会比单个数据慢太多</li>
+<li>每次使用一个batch可以大大减小收敛所需要的迭代次数，同时可以使收敛到的结果更加接近梯度下降的效果。</li>
+<li>可以实现并行。</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li>batch_size的不当选择可能会带来一些问题。</li>
+</ol>
+<p><strong>batch_size的选择带来的影响：</strong></p>
+<ol>
+<li>在合理地范围内，增大batch_size的好处：<br>    a. 内存利用率提高了，大矩阵乘法的并行化效率提高。<br>    b. 跑完一次 epoch（全数据集）所需的迭代次数减少，对于相同数据量的处理速度进一步加快。<br>    c. 在一定范围内，一般来说 Batch_Size 越大，其确定的下降方向越准，引起训练震荡越小。</li>
+<li>盲目增大batch_size的坏处：<br>    a. 内存利用率提高了，但是内存容量可能撑不住了。<br>    b. 跑完一次 epoch（全数据集）所需的迭代次数减少，要想达到相同的精度，其所花费的时间大大增加了，从而对参数的修 正也就显得更加缓慢。<br>    c. Batch_Size 增大到一定程度，其确定的下降方向已经基本不再变化。</li>
+</ol>
+
+        </div>
+
+        
+            <div class="post-copyright-info">
+                <div class="article-copyright-info-container">
+    <ul>
+        <li>Post title：批量梯度下降-BGD-、随机梯度下降-SGD-以及小批量梯度下降-MBGD-的理解</li>
+        <li>Post author：Xinkai Ge</li>
+        <li>Create time：2022-04-27 16:54:33</li>
+        <li>
+            Post link：https://keep.xpoet.cn/2022/04/27/批量梯度下降-BGD-、随机梯度下降-SGD-以及小批量梯度下降-MBGD-的理解/
+        </li>
+        <li>
+            Copyright Notice：All articles in this blog are licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">BY-NC-SA</a> unless stating additionally.
+        </li>
+    </ul>
+</div>
+
+            </div>
+        
+
+        
+            <ul class="post-tags-box">
+                
+                    <li class="tag-item">
+                        <a href="/tags/Machine-learning/">#Machine learning</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+    </div>
+</div>
+
+
+                
+            </div>
+
+        </div>
+
+        <div class="page-main-content-bottom">
+            <footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info info-item">
+            &copy;
+            
+              <span>2020</span>
+              -
+            
+            2022&nbsp;<i class="fas fa-heart icon-animate"></i>&nbsp;<a href="/">Xinkai Ge</a>
+        </div>
+        
+        <div class="theme-info info-item">
+            Powered by <a target="_blank" href="https://hexo.io">Hexo</a>&nbsp;|&nbsp;Theme&nbsp;<a class="theme-version" target="_blank" href="https://github.com/XPoet/hexo-theme-keep">Keep v3.4.5</a>
+        </div>
+        
+        
+    </div>
+</footer>
+
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="tools-item page-aside-toggle">
+                <i class="fas fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-bottom-side-tools">
+        <div class="side-tools-container">
+    <ul class="side-tools-list">
+        <li class="tools-item tool-font-adjust-plus flex-center">
+            <i class="fas fa-search-plus"></i>
+        </li>
+
+        <li class="tools-item tool-font-adjust-minus flex-center">
+            <i class="fas fa-search-minus"></i>
+        </li>
+
+        <li class="tools-item tool-expand-width flex-center">
+            <i class="fas fa-arrows-alt-h"></i>
+        </li>
+
+        <li class="tools-item tool-dark-light-toggle flex-center">
+            <i class="fas fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="tools-item tool-scroll-to-bottom flex-center">
+            <i class="fas fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="exposed-tools-list">
+        <li class="tools-item tool-toggle-show flex-center">
+            <i class="fas fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="tools-item tool-scroll-to-top flex-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+    </ul>
+</div>
+
+    </div>
+
+    
+        <aside class="page-aside">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%EF%BC%88Batch-Gradient-Descent-BGD%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">1. 批量梯度下降（Batch Gradient Descent, BGD）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%EF%BC%88Stochastic-Gradient-Descent%EF%BC%8CSGD%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">2. 随机梯度下降（Stochastic Gradient Descent，SGD）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%EF%BC%88Mini-Batch-Gradient-Descent%EF%BC%8CMBGD%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. 小批量梯度下降（Mini-Batch Gradient Descent，MBGD）</span></a></li></ol>
+    </div>
+</div>
+        </aside>
+    
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+        <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+          <span class="search-input-field-pre">
+            <i class="fas fa-keyboard"></i>
+          </span>
+            <div class="search-input-container">
+                <input autocomplete="off"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       placeholder="Search..."
+                       spellcheck="false"
+                       type="search"
+                       class="search-input"
+                >
+            </div>
+            <span class="popup-btn-close">
+                <i class="fas fa-times"></i>
+            </span>
+        </div>
+        <div id="search-result">
+            <div id="no-result">
+                <i class="fas fa-spinner fa-pulse fa-5x fa-fw"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+</main>
+
+
+
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/main.js"></script>
+
+<script src="/js/header-shrink.js"></script>
+
+<script src="/js/back2top.js"></script>
+
+<script src="/js/dark-light-toggle.js"></script>
+
+
+
+    
+<script src="/js/local-search.js"></script>
+
+
+
+
+    
+<script src="/js/code-copy.js"></script>
+
+
+
+
+
+<div class="post-scripts">
+    
+        
+<script src="/js/left-side-toggle.js"></script>
+
+<script src="/js/libs/anime.min.js"></script>
+
+<script src="/js/toc.js"></script>
+
+    
+</div>
+
+
+
+</body>
+</html>
