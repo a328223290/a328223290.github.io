@@ -88,8 +88,11 @@ epoch（全数据集）所需的迭代次数减少，要想达到相同的精度
 </ul></li>
 </ul>
 ]]></content>
+      <categories>
+        <category>Machine learning</category>
+      </categories>
       <tags>
-        <tag>Machine learning</tag>
+        <tag>Training</tag>
       </tags>
   </entry>
 </search>
