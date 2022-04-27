@@ -8,7 +8,7 @@
 <p>其中$$i&#x3D;1，2，.。。，m$$表示样本数。</p>
 <p>​		对应的代价函数为:<br>$$<br>J(\theta_0,\theta_1)&#x3D;\frac{1}{2m}\sum_{i&#x3D;1}^{m}(h_\theta(x^{(i)})-y^{(i)})^2<br>$$</p>
 <p>​	下图为代价函数$$J(\theta_0,\theta_1)$$与参数$$\theta_0,\theta_1$$的函数图像：</p>
-<p><img src="C:\Users\32822\AppData\Roaming\Typora\typora-user-images\image-20220427154550584.png" alt="image-20220427154550584"></p>
+<p><img src="F:\Blog\source_posts\img\image-20220427154550584.png" alt="image-20220427154550584"></p>
 <h2 id="1-批量梯度下降（Batch-Gradient-Descent-BGD）"><a href="#1-批量梯度下降（Batch-Gradient-Descent-BGD）" class="headerlink" title="1. 批量梯度下降（Batch Gradient Descent, BGD）"></a>1. 批量梯度下降（Batch Gradient Descent, BGD）</h2><p>​	批量梯度下降法是最原始的梯度下降形式，它指在<strong>每一次迭代时使用所有样本来进行梯度的更新</strong>。从数学上可以如下理解：</p>
 <p>（1）对目标函数求偏导：<br>$$<br>\frac{\Delta J(\theta_0,\theta_1)}{\Delta \theta_j}&#x3D;\frac{1}{m}\sum_{i&#x3D;1}^{m}(h_\theta(x^{(i)}-y^{(i)})x_j^{(i)}<br>$$<br>其中$$i&#x3D;1，2，.。。，m$$表示样本数，$$j&#x3D;0,1$$表示特征数，这里我们使用了偏置项$$x_0^{i} &#x3D; 1$$。</p>
 <p>（2）每次迭代对参数进行更新：<br>$$<br>\theta_j&#x3D;\theta_j-\alpha\frac{1}{m}\sum_{i&#x3D;1}^{m}(h_\theta(x^{(i)}-y^{(i)})x_j^{(i)}<br>$$<br>其中$$\alpha$$为学习步长。</p>
@@ -22,7 +22,7 @@
 <li>当样本总数$$m$$很大时，由于每次迭代需要对所有样本进行计算，训练过程会很慢。</li>
 </ol>
 <p>从迭代的次数上，BGD迭代次数相对少。其迭代的收敛曲线示意图可以表示如下：</p>
-<p><img src="C:\Users\32822\AppData\Roaming\Typora\typora-user-images\image-20220427154523839.png" alt="image-20220427154523839"></p>
+<p><img src="F:\Blog\source_posts\img\image-20220427154523839.png" alt="image-20220427154523839"></p>
 <h2 id="2-随机梯度下降（Stochastic-Gradient-Descent，SGD）"><a href="#2-随机梯度下降（Stochastic-Gradient-Descent，SGD）" class="headerlink" title="2. 随机梯度下降（Stochastic Gradient Descent，SGD）"></a>2. 随机梯度下降（Stochastic Gradient Descent，SGD）</h2><p>​	随机梯度下降法不同于批量梯度下降，随机梯度下降是每次迭代使用一个样本来对参数进行更新，使得训练速度加快。</p>
 <p>​	对于一个样本的代价函数为：<br>$$<br>J^{(i)}(\theta_0,\theta_1)&#x3D;\frac{1}{2}(h_\theta(x^{(i)})-y^{(i)})^2<br>$$<br>（1）对目标函数求偏导：<br>$$<br>\frac{\Delta J^{(i)}(\theta_0,\theta_1)}{\theta_j}&#x3D;(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}<br>$$<br>（2）参数更新过程：<br>$$<br>\theta_j&#x3D;\theta_j-\alpha(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}<br>$$<br><strong>优点：</strong></p>
 <ol>
@@ -37,7 +37,7 @@
 <p><strong>为什么SGD收敛速度比BGD要快？</strong></p>
 <p>Ans：假设我们有30W个样本，因为样本数很大，我们再假设BGD要10个epoch才能求得最小值***(epoch指所有的数据送入网络中， 完成了一次前向计算 +反向传播的过程，即所有数据被用于更新权重的一次过程。)***；而对于SGD，每次更新参数只需要一个样本，因此若使用这30W个样本进行参数更新，那么BGD要计算10 x 30W次，而SGD需要1X30W次，并且SGD可能在这之前就能收敛到一个合适的最小值上了。显然SGD的收敛速度远远快于BGD。</p>
 <p>下图为SGD的收敛示意图：</p>
-<p><img src="C:\Users\32822\AppData\Roaming\Typora\typora-user-images\image-20220427155838420.png" alt="image-20220427155838420"></p>
+<p><img src="F:\Blog\source_posts\img\image-20220427155838420.png" alt="image-20220427155838420"></p>
 <h2 id="3-小批量梯度下降（Mini-Batch-Gradient-Descent，MBGD）"><a href="#3-小批量梯度下降（Mini-Batch-Gradient-Descent，MBGD）" class="headerlink" title="3. 小批量梯度下降（Mini-Batch Gradient Descent，MBGD）"></a>3. 小批量梯度下降（Mini-Batch Gradient Descent，MBGD）</h2><p>​	小批量梯度下降法是对批量梯度下降和随机梯度下降的折中。其思想是：每次迭代使用$$batch_size$$个样本来对参数进行更新。</p>
 <p><strong>优点：</strong></p>
 <ol>
