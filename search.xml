@@ -141,9 +141,9 @@ epoch（全数据集）所需的迭代次数减少，要想达到相同的精度
 </ol>
 <p>如此，PCA降维操作便完成了！</p>
 <h1 id="SVD-奇异值分解-—-Singular-Value-Decomposition"><a href="#SVD-奇异值分解-—-Singular-Value-Decomposition" class="headerlink" title="SVD 奇异值分解 — Singular Value Decomposition"></a>SVD 奇异值分解 — Singular Value Decomposition</h1>]]></content>
-      <tags>
-        <tag>Data reduction</tag>
-        <tag>Machine learning</tag>
-      </tags>
+      <categories>
+        <category>Data reduction</category>
+        <category>Machine learning</category>
+      </categories>
   </entry>
 </search>
