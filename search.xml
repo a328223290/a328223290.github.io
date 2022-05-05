@@ -95,4 +95,129 @@ epoch（全数据集）所需的迭代次数减少，要想达到相同的精度
         <tag>Training</tag>
       </tags>
   </entry>
+  <entry>
+    <title>PCA &amp; SVD详解</title>
+    <url>/2022/05/05/PCA-SVD%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<h1 id="pca-主成分分析-principle-component-analysis">PCA 主成分分析 —
+Principle Component Analysis</h1>
+<h2 id="pca的目的">PCA的目的</h2>
+<p>在深入PCA的细节之前，应该先弄清楚PCA是在做一件什么事情。PCA实际上用于数据降维，即将n维数据特征映射到k维上，这k维是全新的正交特征，也被称为主成分。PCA本质上是找到一个新的坐标系使得数据点在选取的坐标轴上投影的方差尽量大（方差大意味着保留的信息最多），方差最大的即为主成分（Principle
+component），我们选择其中方差最大的几个坐标轴来描述原数据，这就完成了降维的操作。</p>
+<p>下图为PCA的阐释图（参考自<a class="link" href="https://www.bilibili.com/video/BV1E5411E71z?spm_id_from=333.337.search-card.all.click">用最直观的方式告诉你：什么是主成分分析PCA<i class="fas fa-external-link-alt"></i></a>）</p>
+<img src="/2022/05/05/PCA-SVD%E8%AF%A6%E8%A7%A3/PCA_illustration.png" class title="PCA阐释">
+<h2 id="pca的步骤">PCA的步骤</h2>
+<p>PCA包括以下步骤：</p>
+<ol type="1">
+<li>去中心化（规范化）：把坐标原点放在数据中心。</li>
+<li>找坐标轴：找到方差最大的方向。</li>
+</ol>
+<p>PCA的主要操作在第二步，即找坐标轴。</p>
+<h2 id="如何找坐标轴">如何找坐标轴</h2>
+<p>在给出具体例子之前，我们以一个直观的例子来解释PCA到底在做什么：</p>
+<p>我们可以假设我们所获得的数据是由白数据（White
+data）通过拉伸与旋转得到的（注意这里是拉伸和旋转数据点），以二维数据举例，示意图如下：</p>
+<img src="/2022/05/05/PCA-SVD%E8%AF%A6%E8%A7%A3/white_data.png" class title="White noise">
+<p>如图所示，白数据中每一个维度的数据都服从标准正态分布，且每个维度都是相互独立的。通过拉伸与旋转后得到的数据的维度不一定服从标准正态分布（但是仍然服从正态分布）且每个维度不一定独立。再看下面这张图：</p>
+<img src="/2022/05/05/PCA-SVD%E8%AF%A6%E8%A7%A3/data.png" class title="PCA阐释2">
+<p>上图更清楚地展示了从白数据到我们手中数据的变换过程，注意到这里的<span class="math inline">\(S\)</span>是一个对角矩阵，其中对角上的值就是新坐标对应坐标轴的标准差（平方后就是方差），这一点后面我们会证明。此外这里的<span class="math inline">\(R\)</span>实际上就是我们要求解的目标，即我们需要得到将原坐标轴旋转的角度。</p>
+<p>那么，如何求解<span class="math inline">\(R\)</span>呢？凑巧的是，<span class="math inline">\(D^{&#39;}\)</span>的特征矩阵恰好就是我们需要的<span class="math inline">\(R\)</span>。</p>
+<p>为什么<span class="math inline">\(D^{&#39;}\)</span>的特征矩阵恰好就是我们需要的<span class="math inline">\(R\)</span>呢？我们首先求出<span class="math inline">\(D^{&#39;}\)</span>的协方差矩阵： <span class="math display">\[
+Cov(D^{&#39;})=\frac{1}{n-1}D^{&#39;}D^{&#39;T}=\frac{1}{n-1}RSD(RSD)^{T}=\frac{1}{n-1}RSDD^TS^TR^T=RSCov(D)S^TR^T\\
+由于白数据的协方差 Cov(D)=\begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1
+\end{bmatrix}可以得到：Cov(D^{&#39;})=RSCov(D)S^TR^T=RSS^TR^T\\
+又因为对旋转矩阵R有：R^{-1}=R^T，可得Cov(D^{&#39;})=RSS^TR^T=RSS^TR^{-1}\\
+注意假设拉伸矩阵S=\begin{bmatrix} a &amp; 0 \\ 0 &amp; b
+\end{bmatrix}，则有：\\
+Cov(D^{&#39;})=R\begin{bmatrix} a^2 &amp; 0 \\ 0 &amp; b^2
+\end{bmatrix}R^{-1}
+\]</span> 这个形式不就是<span class="math inline">\(Cov(D^{&#39;})\)</span>的对角化嘛！对角化不就是利用特征向量和特征值嘛！因此我们可以得到：
+<span class="math display">\[
+假设Cov(D^{&#39;})有的特征向量分别为\vec{v_1}、\vec{v_2}，那么有：\\
+\begin{aligned}
+Cov(D^{&#39;})\vec{v_1}  =  \lambda_1\vec{v_1} \\
+Cov(D^{&#39;})\vec{v_2}  =  \lambda_2\vec{v_2}
+\end{aligned}\\
+由此，我们可以得到：\\
+Cov(D^{&#39;})\begin{bmatrix} \vec{v_1} | \vec{v_2}
+\end{bmatrix}=\begin{bmatrix} \vec{v_1} | \vec{v_2}
+\end{bmatrix}\begin{bmatrix} \lambda_1 &amp; 0 \\ 0 &amp; \lambda_2
+\end{bmatrix}
+即Cov(D^{&#39;})=\begin{bmatrix} \vec{v_1} | \vec{v_2}
+\end{bmatrix}\begin{bmatrix} \lambda_1 &amp; 0 \\ 0 &amp; \lambda_2
+\end{bmatrix}(\begin{bmatrix} \vec{v_1} | \vec{v_2} \end{bmatrix})^{-1}
+\]</span> 故<span class="math inline">\(R=\begin{bmatrix} \vec{v_1} |
+\vec{v_2} \end{bmatrix}\)</span>而<span class="math inline">\(S=\begin{bmatrix} \lambda_1 &amp; 0 \\ 0 &amp;
+\lambda_2 \end{bmatrix}=\begin{bmatrix} a^2 &amp; 0 \\ 0 &amp; b^2
+\end{bmatrix}\)</span>。至此，我们已经可以明白<span class="math inline">\(R\)</span>即为我们手上数据<span class="math inline">\(D^{&#39;}\)</span>的协方差矩阵的特征向量拼接起来的矩阵，其中<span class="math inline">\(\vec{v_1}\)</span>与<span class="math inline">\(\vec{v_2}\)</span>分别表示旋转后的坐标轴，且<span class="math inline">\(\lambda_1=a^2,\lambda_2=b^2\)</span>。</p>
+<p>接下来我们再看特征值代表什么：</p>
+<img src="/2022/05/05/PCA-SVD%E8%AF%A6%E8%A7%A3/cov.png" class title="特征值">
+<p>如图，考虑数据<span class="math inline">\(R^{-1}D^{&#39;}\)</span>，此时的坐标轴还未旋转，仅仅完成了去中心化以及对白数据进行了拉伸，我们试着求一下<span class="math inline">\(R^{-1}D^{&#39;}\)</span>的协方差矩阵： <span class="math display">\[
+Cov(R^{-1}D^{&#39;})=\frac{1}{n-1}R^{-1}D^{&#39;}(R^{-1}D^{&#39;})^{T}=\frac{1}{n-1}R^{-1}D^{&#39;}D^{&#39;T}(R^{-1})^T=R^{-1}Cov(D^{&#39;})R=R^{-1}RSS^TR^{-1}R=SS^T=\begin{bmatrix}
+a^2 &amp; 0 \\ 0 &amp; b^2 \end{bmatrix}
+\]</span></p>
+<p>此时的<span class="math inline">\(a^2\)</span>和<span class="math inline">\(b^2\)</span>分别表示在对应坐标轴上的方差。注意到，乘上<span class="math inline">\(R\)</span>之后我们仅仅把数据进行了旋转，但是方差是不变的，所以可以得到特征值<span class="math inline">\(\lambda_1\)</span>、<span class="math inline">\(\lambda_2\)</span>对应不同坐标轴数据点投影的方差。由于我们将方差最大的坐标轴作为主成分，我们可以通过特征值来判断哪个轴是主成分。</p>
+<h2 id="求解pca的一个例子">求解PCA的一个例子</h2>
+<p>这里给出一个PCA的具体计算例子作为日后的参考：</p>
+<p>以样本点<span class="math inline">\(X=\begin{pmatrix} -1 &amp; -1
+&amp; 0 &amp; 2 &amp; 0 \\ -2 &amp; 0 &amp; 0 &amp; 1 &amp; 1
+\end{pmatrix}\)</span>为例，我们想把<span class="math inline">\(X\)</span>降维到一维，我们要如何做呢？</p>
+<ol type="1">
+<li><p>去中心化（去均值）：去均值的操作是针对每一个维度求出均值并让这个维度的数据减去这个均值。此例中各行（即各维度）的均值已经为0，故无需去均值。</p></li>
+<li><p>计算协方差矩阵的特征向量和特征值：</p>
+<p>求出协方差矩阵<span class="math inline">\(C\)</span>： <span class="math display">\[
+C=\frac{1}{4}\begin{pmatrix} -1 &amp; -1 &amp; 0 &amp; 2 &amp; 0 \\ -2
+&amp; 0 &amp; 0 &amp; 1 &amp; 1 \end{pmatrix}\begin{pmatrix} -1 &amp; -2
+\\ -1 &amp; 0 \\ 0 &amp; 0 \\ 2 &amp; 1 \\ 0 &amp; 1
+\end{pmatrix}=\begin{pmatrix} \frac{3}{2} &amp; 1 \\ 1 &amp; \frac{3}{2}
+\end{pmatrix}
+\]</span> 求协方差矩阵<span class="math inline">\(C\)</span>的特征值和特征向量，此处直接写出结果：
+<span class="math display">\[
+归一化的特征向量对应的特征值为：\\
+\begin{align}
+\vec{v_1}=\begin{pmatrix} \frac{1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}}
+\end{pmatrix}\ \lambda_1=2 \\
+\vec{v_2}=\begin{pmatrix} -\frac{1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}}
+\end{pmatrix}\ \lambda_1=\frac{2}{5} \\
+\end{align}
+\]</span></p></li>
+</ol>
+<p>​</p>
+<ol start="3" type="1">
+<li><p>构建变换矩阵并降维：</p>
+<p>由2中求得的特征向量，可以构建变换矩阵<span class="math inline">\(P\)</span>： <span class="math display">\[
+假设原始数据的矩阵行为维度，列为样本，则：\\
+P=\begin{pmatrix} \frac{\vec{v_1}}{\vec{v_2}}
+\end{pmatrix}=\begin{pmatrix} \frac{1}{\sqrt{2}} &amp;
+\frac{1}{\sqrt{2}} \\ -\frac{1}{\sqrt{2}} &amp;
+\frac{1}{\sqrt{2}}\end{pmatrix}\\
+假设原始数据的矩阵列为维度，行为样本，则：\\
+P=\begin{pmatrix} \vec{v_1}|\vec{v_2} \end{pmatrix}=\begin{pmatrix}
+\frac{1}{\sqrt{2}} &amp; -\frac{1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}} &amp;
+\frac{1}{\sqrt{2}}\end{pmatrix}\\
+\]</span> 注意要按照特征值进行排列。</p>
+<p>之后我们选取特征值大的特征向量<span class="math inline">\(\vec{v_{1}}\)</span>对数据进行压缩，由之前的证明可知，<span class="math inline">\(\vec{v_{1}}\)</span>此时即为主成分的坐标轴，我们要做的是把数据全部投影到主成分上，此操作只需要做一个点乘，假设降维后数据用<span class="math inline">\(Y\)</span>表示，则降维操作如下所示： <span class="math display">\[
+假设原始数据的矩阵行为维度，列为样本，则：\\
+Y=\begin{pmatrix} \frac{1}{\sqrt{2}} &amp;
+\frac{1}{\sqrt{2}}  \end{pmatrix}\begin{pmatrix} -1 &amp; -1 &amp; 0
+&amp; 2 &amp; 0 \\ -2 &amp; 0 &amp; 0 &amp; 1 &amp; 1
+\end{pmatrix}=\begin{pmatrix} -\frac{3}{\sqrt{2}} &amp;
+-\frac{1}{\sqrt{2}} &amp; 0 &amp; \frac{3}{\sqrt{2}} &amp;
+\frac{1}{\sqrt{2}} \end{pmatrix}\\
+假设原始数据的矩阵行为维度，列为样本，则：\\
+Y=\begin{pmatrix} -1 &amp; -2 \\ -1 &amp; 0 \\ 0 &amp; 0 \\ 2 &amp; 1 \\
+0 &amp; 1 \end{pmatrix}\begin{pmatrix}\frac{1}{\sqrt{2}} \\
+\frac{1}{\sqrt{2}} \end{pmatrix}=\begin{pmatrix}-\frac{3}{\sqrt{2}} \\
+-\frac{1}{\sqrt{2}} \\ 0 \\ \frac{3}{\sqrt{2}} \\ \frac{1}{\sqrt{2}}
+\end{pmatrix}
+\]</span></p></li>
+</ol>
+<p>如此，PCA降维操作便完成了！</p>
+<h1 id="svd-奇异值分解-singular-value-decomposition">SVD 奇异值分解 —
+Singular Value Decomposition</h1>
+]]></content>
+      <tags>
+        <tag>Data reduction</tag>
+        <tag>Machine learning</tag>
+      </tags>
+  </entry>
 </search>
